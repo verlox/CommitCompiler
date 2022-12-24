@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Veylib;
 using Veylib.Utilities.Net;
 using Veylib.ICLI;
 using System.Net;
@@ -12,7 +13,6 @@ using System.Text.RegularExpressions;
 using System.Net.Configuration;
 using System.Security.Policy;
 using System.Drawing;
-using Veylib;
 
 namespace ReleaseNoteGenerator
 {
