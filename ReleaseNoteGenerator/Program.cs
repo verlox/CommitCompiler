@@ -102,7 +102,12 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                                                                        /_/                            "
                 },
                 DefaultMessageLabel = null,
-                DefaultMessageTime = null
+                DefaultMessageTime = null,
+                SplashScreen = new Core.StartupSpashScreenProperties
+                {
+                    AutoGenerate = true,
+                    DisplayProgressBar = true
+                }
             };
             core.Start(properties);
 
