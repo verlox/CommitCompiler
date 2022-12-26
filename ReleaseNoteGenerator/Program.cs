@@ -21,6 +21,8 @@ namespace ReleaseNoteGenerator
         static Core core = new Core();
         static Regex keywordsRegex = new Regex(@"add|update|change|fix|remove|pull request|rename|cleanup|format");
         static Regex swearingRegex = new Regex(@"([a-z0-9]{0,99})(fuck|shit|ass)([a-z0-9]{0,99})", RegexOptions.IgnoreCase);
+        static Regex shaRegex = new Regex(@"^[a-z0-9]{40}$", RegexOptions.IgnoreCase);
+        static Regex userRepoRegex = new Regex(@"^([a-z0-9\-]{1,39}/[a-z0-9\-\.]{1,100})$", RegexOptions.IgnoreCase);
         static List<string> swearingWhitelist = new List<string> { "class", "password" };
         static Dictionary<string, List<string>> messages = new Dictionary<string, List<string>>
             {
@@ -111,8 +113,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
             };
             core.Start(properties);
 
-            Regex shaRegex = new Regex(@"^[a-z0-9]{40}$", RegexOptions.IgnoreCase);
-            Regex userRepoRegex = new Regex(@"^([a-z0-9\-]{1,39}/[a-z0-9\-\.]{1,100})$", RegexOptions.IgnoreCase);
+            
 
         repoInput:
             string repo = "";
