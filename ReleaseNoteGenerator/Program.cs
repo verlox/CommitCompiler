@@ -223,7 +223,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                 if (msg.Value.Count == 0)
                     continue;
 
-                File.AppendAllText("commits.txt", $"## {msg.Key[0].ToString().ToUpper()}{msg.Key.Substring(1, msg.Key.Length - 1)}:\n\n");
+                List<string> commits = new List<string>();
                 foreach (string val in msg.Value)
                 {
                     if (val.Split(' ').Length < 4)
@@ -240,8 +240,15 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
 
                         censored = censored.Replace(match.Value, new string('#', match.Value.Length));
                     }
-                    File.AppendAllText("commits.txt", $"{censored}\n");
+                    commits.Add(censored);
                 }
+
+                if (commits.Count > 0)
+                { 
+                    File.AppendAllText("commits.txt", $"## {msg.Key[0].ToString().ToUpper()}{msg.Key.Substring(1, msg.Key.Length - 1)}:\n\n");
+                    File.AppendAllLines("commits.txt", commits);
+                }
+
             }
 
             File.AppendAllText("commits.txt", $"\n# Statistics\n\n* **Commits done**: {totalCommits}\n\n(Generated with [*CommitCompiler*](https://github.com/verlox/CommitCompiler) made by **verlox**)");
