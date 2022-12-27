@@ -1,5 +1,13 @@
+<div align="center">
+
 # CommitCompiler
+[![wakatime](https://wakatime.com/badge/user/0ccf7ed5-30a2-486d-8ea4-6b0ca58cd9c9/project/e545bad5-fc9a-43a5-8d94-19a7bb38847a.svg)](https://wakatime.com/badge/user/0ccf7ed5-30a2-486d-8ea4-6b0ca58cd9c9/project/e545bad5-fc9a-43a5-8d94-19a7bb38847a)
+![Lifecycle](https://img.shields.io/badge/lifecycle-finalizing%20code-yellow)
+![CodeQL](https://github.com/verlox/CommitCompiler/actions/workflows/codeql.yml/badge.svg)
+<br>
 Simplifies writing release descriptions because I suck at them.
+
+</div>
 
 ## Features
 * Get a list of all commits since a commit
