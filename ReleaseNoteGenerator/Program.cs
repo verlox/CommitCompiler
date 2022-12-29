@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using Veylib;
 using Veylib.Utilities.Net;
@@ -10,21 +9,19 @@ using System.Net;
 using System.IO;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using System.Net.Configuration;
-using System.Security.Policy;
 using System.Drawing;
 
 namespace ReleaseNoteGenerator
 {
     internal class Program
     {
-        static Core core = new Core();
-        static Regex keywordsRegex = new Regex(@"add|update|change|fix|remove|pull request|rename|cleanup|format");
-        static Regex swearingRegex = new Regex(@"([a-z0-9]{0,99})(fuck|shit|ass)([a-z0-9]{0,99})", RegexOptions.IgnoreCase);
-        static Regex shaRegex = new Regex(@"^[a-z0-9]{40}$", RegexOptions.IgnoreCase);
-        static Regex userRepoRegex = new Regex(@"^([a-z0-9\-]{1,39}/[a-z0-9\-\.]{1,100})$", RegexOptions.IgnoreCase);
-        static List<string> swearingWhitelist = new List<string> { "class", "password" };
-        static Dictionary<string, List<string>> messages = new Dictionary<string, List<string>>
+        internal static Core core = new Core();
+        private static Regex keywordsRegex = new Regex(@"add|update|change|fix|remove|pull request|rename|cleanup|format");
+        private static Regex swearingRegex = new Regex(@"([a-z0-9]{0,99})(fuck|shit|ass)([a-z0-9]{0,99})", RegexOptions.IgnoreCase);
+        private static Regex shaRegex = new Regex(@"^[a-z0-9]{40}$", RegexOptions.IgnoreCase);
+        private static Regex userRepoRegex = new Regex(@"^([a-z0-9\-]{1,39}/[a-z0-9\-\.]{1,100})$", RegexOptions.IgnoreCase);
+        private static List<string> swearingWhitelist = new List<string> { "class", "password" };
+        private static Dictionary<string, List<string>> messages = new Dictionary<string, List<string>>
             {
                 {
                     "add",
@@ -111,9 +108,71 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                     DisplayProgressBar = true
                 }
             };
+
+#if DEBUG
+            properties.SplashScreen = null;
+#endif
+
             core.Start(properties);
 
+            // import settings
+            Settings.import();
+
+            pickOption:
+            core.WriteLine("Pick an option:");
+            switch (new SelectionMenu("Start", "Settings", "Exit").Activate())
+            {
+                case "Start":
+                    goto repoInput;
+                case "Settings":
+                    goto settingsMenu;
+                default:
+                    Environment.Exit(0);
+                    return;
+            }
+
+        settingsMenu:
+            core.Clear();
+            core.WriteLine("Options");
+            string opt(bool input)
+            {
+                return $"{Core.Formatting.Reset} [{(input ? $"{Core.Formatting.CreateColorString(Color.Lime)}enabled " : $"{Core.Formatting.CreateColorString(Color.Red)}disabled")}{Core.Formatting.Reset}]";
+            }
+            SelectionMenu.Settings settings = new SelectionMenu.Settings
+            {
+                Style = new SelectionMenu.Style
+                {
+                    SelectionFormatTags = Core.Formatting.Underline + Core.Formatting.Italic,
+                    PreOptionText = " > "
+                }
+            };
+
+            SelectionMenu menu = new SelectionMenu(settings);
+            menu.Options.AddRange(new List<string> { $"Censor swearing{opt(Settings.censorSwearing)}", $"Auto capitalize{opt(Settings.autoCapitalize)}", $"Add commit hash{opt(Settings.addCommitHash)}", $"Remove one word commits{opt(Settings.filterCommits)}", $"Sort commits into categories{opt(Settings.sortCommits)}", $"{Core.Formatting.CreateColorString(Color.Red)}Back" });
             
+            switch (menu.Activate().Split(' ').First())
+            {
+                case "Censor":
+                    Settings.censorSwearing = !Settings.censorSwearing;
+                    goto settingsMenu;
+                case "Auto":
+                    Settings.autoCapitalize = !Settings.autoCapitalize;
+                    goto settingsMenu;
+                case "Add":
+                    Settings.addCommitHash = !Settings.addCommitHash;
+                    goto settingsMenu;
+                case "Remove":
+                    Settings.filterCommits = !Settings.filterCommits;
+                    goto settingsMenu;
+                case "Sort":
+                    Settings.sortCommits = !Settings.sortCommits;
+                    goto settingsMenu;
+            }
+
+            core.Clear();
+            Settings.export();
+
+            goto pickOption;
 
         repoInput:
             string repo = "";
