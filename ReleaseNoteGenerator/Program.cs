@@ -92,8 +92,7 @@ namespace ReleaseNoteGenerator
                 Logo = new Core.StartupLogoProperties
                 {
                     AutoCenter = true,
-                    Text = @"
-_________                           ___________________                        ___________            
+                    Text = @"_________                           ___________________                        ___________            
 __  ____/____________ __________ ______(_)_  /__  ____/____________ ______________(_)__  /____________
 _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \_  /__  /_  _ \_  ___/
 / /___  / /_/ /  / / / / /  / / / / /  / / /_ / /___  / /_/ /  / / / / /_  /_/ /  / _  / /  __/  /    
@@ -118,7 +117,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
             // import settings
             Settings.import();
 
-            pickOption:
+        pickOption:
             core.WriteLine("Pick an option:");
             switch (new SelectionMenu("Start", "Settings", "Exit").Activate())
             {
@@ -257,7 +256,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                             type = "change";
 
                         messages.TryGetValue(type, out List<string> list);
-                        list.Add($"* [{commit.sha}] {message[0].ToString().ToUpper()}{message.Substring(1, message.Length - 1).Split('\n')[0]}");
+                        list.Add($"* {(Settings.addCommitHash ? $"[{commit.sha}] " : "")}{(Settings.autoCapitalize ? $"{message[0].ToString().ToUpper()}{message.Substring(1, message.Length - 1).Split('\n')[0]}" : message)}");
                         if (commit.sha == sinceSha)
                         {
                             core.WriteLine("Found commit hash that matches original (", Color.White, sinceSha, null, "), total commits logged and sorted: ", Color.White, totalCommits.ToString());
@@ -285,26 +284,35 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                 List<string> commits = new List<string>();
                 foreach (string val in msg.Value)
                 {
-                    if (val.Split(' ').Length < 4)
-                        continue;
-                    else if (val.Contains("Merge branch 'master") || val.Contains("dependabot"))
-                        continue;
+                    if (Settings.filterCommits)
+                    {
+                        if (val.Split(' ').Length < 4)
+                            continue;
+                        else if (val.Contains("Merge branch 'master") || val.Contains("dependabot"))
+                            continue;
+                    }
 
                     string censored = val;
-                    foreach (Match match in swearingRegex.Matches(val))
-                    {
-                        string word = $"{match.Groups[1]}{match.Groups[2]}{match.Groups[3]}";
-                        if (swearingWhitelist.Contains(word))
-                            break;
 
-                        censored = censored.Replace(match.Value, new string('#', match.Value.Length));
+                    if (Settings.censorSwearing)
+                    {
+                        foreach (Match match in swearingRegex.Matches(val))
+                        {
+                            string word = $"{match.Groups[1]}{match.Groups[2]}{match.Groups[3]}";
+                            if (swearingWhitelist.Contains(word))
+                                break;
+
+                            censored = censored.Replace(match.Value, new string('#', match.Value.Length));
+                        }
                     }
                     commits.Add(censored);
                 }
 
                 if (commits.Count > 0)
                 { 
-                    File.AppendAllText("commits.txt", $"## {msg.Key[0].ToString().ToUpper()}{msg.Key.Substring(1, msg.Key.Length - 1)}:\n\n");
+                    if (Settings.sortCommits)
+                        File.AppendAllText("commits.txt", $"## {msg.Key[0].ToString().ToUpper()}{msg.Key.Substring(1, msg.Key.Length - 1)}:\n\n");
+    
                     File.AppendAllLines("commits.txt", commits);
                 }
 
