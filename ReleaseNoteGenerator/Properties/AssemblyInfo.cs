@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ReleaseNoteGenerator")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("CommitCompiler")]
+[assembly: AssemblyDescription("Creates a list of all commit messages since a date and automatically formats them")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("HP")]
-[assembly: AssemblyProduct("ReleaseNoteGenerator")]
-[assembly: AssemblyCopyright("Copyright © HP 2022")]
+[assembly: AssemblyCompany("verlox")]
+[assembly: AssemblyProduct("CommitCompiler")]
+[assembly: AssemblyCopyright("Copyright © verlox 2022")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

@@ -10,6 +10,8 @@ using System.IO;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Drawing;
+using System.Runtime.InteropServices;
+using Veylib.Utilities;
 
 namespace ReleaseNoteGenerator
 {
@@ -76,6 +78,14 @@ namespace ReleaseNoteGenerator
         }
         static void Main(string[] args)
         {
+            VeylibHandler.ProjectIdentifier = "CommitCompiler";
+            VeylibHandler.SetExceptionHandlingMode(VeylibHandler.ExceptionHandlingMode.Handle);
+            VeylibHandler.Exception += (e) =>
+            {
+                Debug.WriteLine(e);
+                core.WriteLine(Color.Red, "Error in VeylibHandler: ", Color.OrangeRed, e.Message);
+            };
+
             Core.StartupProperties properties = new Core.StartupProperties
             {
                 Author = new Core.StartupAuthorProperties
@@ -112,6 +122,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
             properties.SplashScreen = null;
 #endif
 
+            // Start the console core
             core.Start(properties);
 
             // import settings
@@ -211,7 +222,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                 goto shaInput;
             }
 
-            retrieveCommits:
+        retrieveCommits:
 
             int page = 1;
             int totalCommits = 0;
@@ -276,6 +287,21 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                 File.Delete("commits.txt");
 
             core.WriteLine("Compiling into commits.txt");
+            
+            // Progress bar :)
+            ProgressBar progress = new ProgressBar(new ProgressBar.Settings { TotalParts = messages.Count, Style = new ProgressBar.Style { DisplayCompletion = true } });
+            new Thread(() =>
+            {
+                while (true)
+                {
+                    try
+                    {
+                        progress.Render();
+                    }
+                    catch { }
+                }
+            }).Start();
+
             foreach (var msg in messages)
             {
                 if (msg.Value.Count == 0)
@@ -316,7 +342,10 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                     File.AppendAllLines("commits.txt", commits);
                 }
 
+                progress.AddProgress();
             }
+
+            progress.Remove();
 
             File.AppendAllText("commits.txt", $"\n# Statistics\n\n* **Commits done**: {totalCommits}\n\n(Generated with [*CommitCompiler*](https://github.com/verlox/CommitCompiler) made by **verlox**)");
 
