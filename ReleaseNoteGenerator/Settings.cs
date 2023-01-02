@@ -18,6 +18,7 @@ namespace ReleaseNoteGenerator
                 key.SetValue("addCommitHash", addCommitHash);
                 key.SetValue("filterCommits", filterCommits);
                 key.SetValue("sortCommits", sortCommits);
+                key.SetValue("removeDupes", removeDupes);
                 Program.core.WriteLine(Color.Green, "Exported settings to registry");
             }
             catch (Exception ex)
@@ -37,6 +38,7 @@ namespace ReleaseNoteGenerator
                 addCommitHash = bool.Parse(key.GetValue("addCommitHash")?.ToString() ?? "true");
                 filterCommits = bool.Parse(key.GetValue("filterCommits")?.ToString() ?? "true");
                 sortCommits = bool.Parse(key.GetValue("sortCommits")?.ToString() ?? "true");
+                removeDupes = bool.Parse(key.GetValue("removeDupes")?.ToString() ?? "true");
                 Program.core.WriteLine(Color.Green, "Imported settings from registry");
             }
             catch (Exception ex)
@@ -51,5 +53,6 @@ namespace ReleaseNoteGenerator
         internal static bool addCommitHash = true;
         internal static bool filterCommits = true;
         internal static bool sortCommits = true;
+        internal static bool removeDupes = true;
     }
 }

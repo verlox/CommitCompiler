@@ -115,7 +115,8 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                 SplashScreen = new Core.StartupSpashScreenProperties
                 {
                     AutoGenerate = true,
-                    DisplayProgressBar = true
+                    DisplayProgressBar = true,
+                    DisplayTime = 10
                 }
             };
 
@@ -159,7 +160,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
             };
 
             SelectionMenu menu = new SelectionMenu(settings);
-            menu.Options.AddRange(new List<string> { $"Censor swearing{opt(Settings.censorSwearing)}", $"Auto capitalize{opt(Settings.autoCapitalize)}", $"Add commit hash{opt(Settings.addCommitHash)}", $"Remove one word commits{opt(Settings.filterCommits)}", $"Sort commits into categories{opt(Settings.sortCommits)}", $"{Core.Formatting.CreateColorString(Color.Red)}Back" });
+            menu.Options.AddRange(new List<string> { $"Censor swearing{opt(Settings.censorSwearing)}", $"Auto capitalize{opt(Settings.autoCapitalize)}", $"Add commit hash{opt(Settings.addCommitHash)}", $"Remove one word commits{opt(Settings.filterCommits)}", $"Sort commits into categories{opt(Settings.sortCommits)}", $"Skip duplicate commit messaegs{opt(Settings.removeDupes)}", $"{Core.Formatting.CreateColorString(Color.Red)}Back" });
             
             switch (menu.Activate().Split(' ').First())
             {
@@ -177,6 +178,9 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                     goto settingsMenu;
                 case "Sort":
                     Settings.sortCommits = !Settings.sortCommits;
+                    goto settingsMenu;
+                case "Skip":
+                    Settings.removeDupes = !Settings.removeDupes;
                     goto settingsMenu;
             }
 
@@ -268,7 +272,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                             type = "change";
 
                         messages.TryGetValue(type, out List<string> list);
-                        if (!rawMessages.Contains(message.ToLower()))
+                        if (!rawMessages.Contains(message.ToLower()) && Settings.removeDupes)
                         {
                             core.WriteLine("Ignoring commit with hash ", Color.White, commit.sha.ToString(), null, ", same message as previous commit");
                             list.Add($"* {(Settings.addCommitHash ? $"[{commit.sha}] " : "")}{(Settings.autoCapitalize ? $"{message[0].ToString().ToUpper()}{message.Substring(1, message.Length - 1).Split('\n')[0]}" : message)}");
@@ -294,20 +298,6 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
 
             core.WriteLine("Compiling into commits.txt");
             
-            // Progress bar :)
-            ProgressBar progress = new ProgressBar(new ProgressBar.Settings { TotalParts = messages.Count, Style = new ProgressBar.Style { DisplayCompletion = true } });
-            new Thread(() =>
-            {
-                while (true)
-                {
-                    try
-                    {
-                        progress.Render();
-                    }
-                    catch { }
-                }
-            }).Start();
-
             foreach (var msg in messages)
             {
                 if (msg.Value.Count == 0)
@@ -347,11 +337,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
     
                     File.AppendAllLines("commits.txt", commits);
                 }
-
-                progress.AddProgress();
             }
-
-            progress.Remove();
 
             File.AppendAllText("commits.txt", $"\n# Statistics\n\n* **Commits done**: {totalCommits}\n\n(Generated with [*CommitCompiler*](https://github.com/verlox/CommitCompiler) made by **verlox**)");
 
