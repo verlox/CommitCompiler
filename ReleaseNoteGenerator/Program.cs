@@ -22,7 +22,7 @@ namespace ReleaseNoteGenerator
         private static Regex swearingRegex = new Regex(@"([a-z0-9]{0,99})(fuck|shit|ass)([a-z0-9]{0,99})", RegexOptions.IgnoreCase);
         private static Regex shaRegex = new Regex(@"^[a-z0-9]{40}$", RegexOptions.IgnoreCase);
         private static Regex userRepoRegex = new Regex(@"^([a-z0-9\-]{1,39}/[a-z0-9\-\.]{1,100})$", RegexOptions.IgnoreCase);
-        private static List<string> swearingWhitelist = new List<string> { "class", "password" };
+        private static List<string> swearingWhitelist = new List<string> { "class", "password", "assembly" };
         private static Dictionary<string, List<string>> messages = new Dictionary<string, List<string>>
             {
                 {
@@ -325,10 +325,18 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                         foreach (Match match in swearingRegex.Matches(val))
                         {
                             string word = $"{match.Groups[1]}{match.Groups[2]}{match.Groups[3]}";
-                            if (swearingWhitelist.Contains(word))
-                                break;
+                            bool replace = true;
+                            foreach (string swear in swearingWhitelist)
+                            {
+                                if (word.ToLower().Contains(swear))
+                                {
+                                    replace = false;
+                                    break;
+                                }
+                            }
 
-                            censored = censored.Replace(match.Value, new string('#', match.Value.Length));
+                            if (replace)
+                                censored = censored.Replace(match.Value, new string('#', match.Value.Length));
                         }
                     }
                     commits.Add(censored);
