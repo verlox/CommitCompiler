@@ -137,7 +137,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
             Settings.import();
 
         pickOption:
-            CLI.WriteLine("Pick an option:");
+            CLI.WriteLine(new CLI.MessageProperties { Time = null }, "Pick an option:");
             switch (new SelectionMenu("Start", "Settings", "Exit").Activate())
             {
                 case "Start":
@@ -151,7 +151,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
 
         settingsMenu:
             CLI.Clear();
-            CLI.WriteLine("Options");
+            CLI.WriteLine(new CLI.MessageProperties { Time = null }, "Options");
             string opt(bool input)
             {
                 return $"{CLI.Formatting.Reset} [{(input ? $"{CLI.Formatting.CreateColorString(Color.Lime)}enabled " : $"{CLI.Formatting.CreateColorString(Color.Red)}disabled")}{CLI.Formatting.Reset}]";
@@ -360,10 +360,15 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
             if (new SelectionMenu("Yes", "No").Activate() == "Yes")
             {
                 Process.Start("commits.txt");
-                CLI.WriteLine("Closing in 5 seconds...");
+                CLI.Write("Closing in 5 seconds");
                 new Thread(() =>
                 {
-                    Thread.Sleep(5000);
+                    for (int i = 0;i < 5; i++)
+                    {   
+                        CLI.Write(".");
+                        Thread.Sleep(1000);
+                    }
+
                     Environment.Exit(0);
                 }).Start();
             }
