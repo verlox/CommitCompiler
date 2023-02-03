@@ -31,6 +31,7 @@ namespace ReleaseNoteGenerator
         private static Regex shaRegex = new Regex(@"^[a-z0-9]{40}$", RegexOptions.IgnoreCase);
         private static Regex userRepoRegex = new Regex(@"^([a-z0-9\-]{1,39}/[a-z0-9\-\.]{1,100})$", RegexOptions.IgnoreCase);
         private static List<string> swearingWhitelist = new List<string> { "class", "password", "assembly" };
+        private static List<string> rawMessages = new List<string>();
         private static Dictionary<string, List<string>> messages = new Dictionary<string, List<string>>
             {
                 {
@@ -118,7 +119,6 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                                                                        /_/                            "
                 },
                 DefaultMessageLabel = null,
-                DefaultMessageTime = null,
                 SplashScreen = new CLI.StartupSpashScreenProperties
                 {
                     AutoGenerate = true,
@@ -127,7 +127,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
             };
 
 #if DEBUG
-            //properties.SplashScreen = null;
+            properties.SplashScreen = null;
 #endif
 
             // Start the console core
@@ -281,13 +281,13 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                         messages.TryGetValue(type, out List<string> list);
                         if (!rawMessages.Contains(message.ToLower()) && Settings.removeDupes)
                         {
-                            CLI.WriteLine("Ignoring commit with hash ", Color.White, commit.sha.ToString(), null, ", same message as previous commit");
-                            list.Add($"* {(Settings.addCommitHash ? $"[{commit.sha}] " : "")}{(Settings.autoCapitalize ? $"{message[0].ToString().ToUpper()}{message.Substring(1, message.Length - 1).Split('\n')[0]}" : message)}");
+                            CLI.WriteLine("Ignoring commit with hash ", Color.White, commit.sha.ToString().Substring(0, 7), null, ", same message as previous commit");
+                            list.Add($"* {(Settings.addCommitHash ? $"[{commit.sha.ToString().Substring(0, 7)}] " : "")}{(Settings.autoCapitalize ? $"{message[0].ToString().ToUpper()}{message.Substring(1, message.Length - 1).Split('\n')[0]}" : message)}");
                             rawMessages.Add(message.ToLower());
                         }
                         if (commit.sha == sinceSha)
                         {
-                            CLI.WriteLine("Found commit hash that matches original (", Color.White, sinceSha, null, "), total commits logged and sorted: ", Color.White, totalCommits.ToString());
+                            CLI.WriteLine("Found commit hash that matches original (", Color.White, sinceSha.Substring(0, 7), null, "), total commits logged and sorted: ", Color.White, totalCommits.ToString());
                             foundSha = true;
                             break;
                         }
