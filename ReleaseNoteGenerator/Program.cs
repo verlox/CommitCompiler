@@ -13,11 +13,19 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using Veylib.Utilities;
 
+/*
+ * 
+ * TODO
+ * 
+ * fix extra fucking lines caused by splash screen (?????)
+ * 
+ */
+
 namespace ReleaseNoteGenerator
 {
     internal class Program
     {
-        internal static Core core = new Core();
+        internal static CLI core = new CLI();
         private static Regex keywordsRegex = new Regex(@"add|update|change|fix|remove|pull request|rename|cleanup|format");
         private static Regex swearingRegex = new Regex(@"([a-z0-9]{0,99})(fuck|shit|ass)([a-z0-9]{0,99})", RegexOptions.IgnoreCase);
         private static Regex shaRegex = new Regex(@"^[a-z0-9]{40}$", RegexOptions.IgnoreCase);
@@ -72,7 +80,7 @@ namespace ReleaseNoteGenerator
         {
             if (response.Headers.GetValues("X-Ratelimit-Remaining")[0] == "0")
             {
-                core.WriteLine(Color.Red, $"Ratelimited until {General.FromEpoch(long.Parse(response.Headers.GetValues("X-Ratelimit-Reset")[0]))}, press any key to exit");
+                CLI.WriteLine(Color.Red, $"Ratelimited until {General.FromEpoch(long.Parse(response.Headers.GetValues("X-Ratelimit-Reset")[0]))}, press any key to exit");
                 Console.ReadKey();
                 Environment.Exit(0);
             }
@@ -84,23 +92,23 @@ namespace ReleaseNoteGenerator
             VeylibHandler.Exception += (e) =>
             {
                 Debug.WriteLine(e);
-                core.WriteLine(Color.Red, "Error in VeylibHandler: ", Color.OrangeRed, e.Message);
+                CLI.WriteLine(Color.Red, "Error in VeylibHandler: ", Color.OrangeRed, e.Message);
             };
 
-            Core.StartupProperties properties = new Core.StartupProperties
+            CLI.StartupProperties properties = new CLI.StartupProperties
             {
-                Author = new Core.StartupAuthorProperties
+                Author = new CLI.StartupAuthorProperties
                 {
                     Name = "verlox",
                     Url = "verlox.cc"
                 },
                 Version = "1.0.0.0",
-                Title = new Core.StartupConsoleTitleProperties
+                Title = new CLI.StartupConsoleTitleProperties
                 {
                     Animated = false,
                     Text = "CommitCompiler"
                 },
-                Logo = new Core.StartupLogoProperties
+                Logo = new CLI.StartupLogoProperties
                 {
                     AutoCenter = true,
                     Text = @"_________                           ___________________                        ___________            
@@ -112,26 +120,25 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                 },
                 DefaultMessageLabel = null,
                 DefaultMessageTime = null,
-                SplashScreen = new Core.StartupSpashScreenProperties
+                SplashScreen = new CLI.StartupSpashScreenProperties
                 {
                     AutoGenerate = true,
                     DisplayProgressBar = true,
-                    DisplayTime = 10
                 }
             };
 
 #if DEBUG
-            properties.SplashScreen = null;
+            //properties.SplashScreen = null;
 #endif
 
             // Start the console core
-            core.Start(properties);
+            CLI.Start(properties);
 
             // import settings
             Settings.import();
 
         pickOption:
-            core.WriteLine("Pick an option:");
+            CLI.WriteLine("Pick an option:");
             switch (new SelectionMenu("Start", "Settings", "Exit").Activate())
             {
                 case "Start":
@@ -144,23 +151,23 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
             }
 
         settingsMenu:
-            core.Clear();
-            core.WriteLine("Options");
+            CLI.Clear();
+            CLI.WriteLine("Options");
             string opt(bool input)
             {
-                return $"{Core.Formatting.Reset} [{(input ? $"{Core.Formatting.CreateColorString(Color.Lime)}enabled " : $"{Core.Formatting.CreateColorString(Color.Red)}disabled")}{Core.Formatting.Reset}]";
+                return $"{CLI.Formatting.Reset} [{(input ? $"{CLI.Formatting.CreateColorString(Color.Lime)}enabled " : $"{CLI.Formatting.CreateColorString(Color.Red)}disabled")}{CLI.Formatting.Reset}]";
             }
             SelectionMenu.Settings settings = new SelectionMenu.Settings
             {
                 Style = new SelectionMenu.Style
                 {
-                    SelectionFormatTags = Core.Formatting.Underline + Core.Formatting.Italic,
+                    SelectionFormatTags = CLI.Formatting.Underline + CLI.Formatting.Italic,
                     PreOptionText = " > "
                 }
             };
 
             SelectionMenu menu = new SelectionMenu(settings);
-            menu.Options.AddRange(new List<string> { $"Censor swearing{opt(Settings.censorSwearing)}", $"Auto capitalize{opt(Settings.autoCapitalize)}", $"Add commit hash{opt(Settings.addCommitHash)}", $"Remove one word commits{opt(Settings.filterCommits)}", $"Sort commits into categories{opt(Settings.sortCommits)}", $"Skip duplicate commit messaegs{opt(Settings.removeDupes)}", $"{Core.Formatting.CreateColorString(Color.Red)}Back" });
+            menu.Options.AddRange(new List<string> { $"Censor swearing{opt(Settings.censorSwearing)}", $"Auto capitalize{opt(Settings.autoCapitalize)}", $"Add commit hash{opt(Settings.addCommitHash)}", $"Remove one word commits{opt(Settings.filterCommits)}", $"Sort commits into categories{opt(Settings.sortCommits)}", $"Skip duplicate commit messaegs{opt(Settings.removeDupes)}", $"{CLI.Formatting.CreateColorString(Color.Red)}Back" });
             
             switch (menu.Activate().Split(' ').First())
             {
@@ -184,7 +191,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                     goto settingsMenu;
             }
 
-            core.Clear();
+            CLI.Clear();
             Settings.export();
 
             goto pickOption;
@@ -192,7 +199,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
         repoInput:
             string repo = "";
 
-            string userrepo = core.ReadLine("Enter repository url $ ", Color.White);
+            string userrepo = CLI.ReadLine("Enter repository url $ ", Color.White);
             userrepo = userrepo.Replace("https://github.com/", "");
             Match userRepoMatch = userRepoRegex.Match(userrepo);
             if (!userRepoMatch.Success)
@@ -207,11 +214,12 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
             if (response.Status != HttpStatusCode.OK)
             {
                 ratelimitCheck(response);
-                core.WriteLine(Color.Red, "Repo does not exist");
+                CLI.WriteLine(Color.Red, "Repo does not exist");
                 goto repoInput;
             }
+
         shaInput:
-            string sinceSha = core.ReadLine("Since commit (SHA hash) $ ", Color.White);
+            string sinceSha = CLI.ReadLine("Since commit (SHA hash) $ ", Color.White);
 
             if (shaRegex.Matches(sinceSha).Count != 1)
                 goto shaInput;
@@ -223,7 +231,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
             if (response.Status != HttpStatusCode.OK)
             {
                 ratelimitCheck(response);
-                core.WriteLine(Color.Red, "Commit does not exist");
+                CLI.WriteLine(Color.Red, "Commit does not exist");
                 goto shaInput;
             }
 
@@ -234,7 +242,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
             try
             {
                 bool foundSha = false;
-                core.WriteLine("Started scanning for commits in repository ", Color.White, repo, "...");
+                CLI.WriteLine("Started scanning for commits in repository ", Color.White, repo, "...");
                 while (!foundSha)
                 {
                     request = new NetRequest($"https://api.github.com/repos/{repo}/commits?page={page}&per_page=100");
@@ -244,7 +252,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                     if (response.Status != HttpStatusCode.OK)
                     {
                         ratelimitCheck(response);
-                        core.WriteLine(Color.Red, $"Failed to send request: {response.Content}, retry?");
+                        CLI.WriteLine(Color.Red, $"Failed to send request: {response.Content}, retry?");
                         switch (new SelectionMenu("Retry", "Exit").Activate())
                         {
                             case "Retry":
@@ -257,7 +265,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                     else if (json?.Count == 0 || json == null)
                         break;
 
-                    core.WriteLine("Reading page ", Color.White, page.ToString(), null, ", total commits on page: ", Color.White, json.Count.ToString());
+                    CLI.WriteLine("Reading page ", Color.White, page.ToString(), null, ", total commits on page: ", Color.White, json.Count.ToString());
                     foreach (dynamic commit in json)
                     {
                         totalCommits++;
@@ -274,13 +282,13 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
                         messages.TryGetValue(type, out List<string> list);
                         if (!rawMessages.Contains(message.ToLower()) && Settings.removeDupes)
                         {
-                            core.WriteLine("Ignoring commit with hash ", Color.White, commit.sha.ToString(), null, ", same message as previous commit");
+                            CLI.WriteLine("Ignoring commit with hash ", Color.White, commit.sha.ToString(), null, ", same message as previous commit");
                             list.Add($"* {(Settings.addCommitHash ? $"[{commit.sha}] " : "")}{(Settings.autoCapitalize ? $"{message[0].ToString().ToUpper()}{message.Substring(1, message.Length - 1).Split('\n')[0]}" : message)}");
                             rawMessages.Add(message.ToLower());
                         }
                         if (commit.sha == sinceSha)
                         {
-                            core.WriteLine("Found commit hash that matches original (", Color.White, sinceSha, null, "), total commits logged and sorted: ", Color.White, totalCommits.ToString());
+                            CLI.WriteLine("Found commit hash that matches original (", Color.White, sinceSha, null, "), total commits logged and sorted: ", Color.White, totalCommits.ToString());
                             foundSha = true;
                             break;
                         }
@@ -296,7 +304,7 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
             if (File.Exists("commits.txt"))
                 File.Delete("commits.txt");
 
-            core.WriteLine("Compiling into commits.txt");
+            CLI.WriteLine("Compiling into commits.txt");
             
             foreach (var msg in messages)
             {
@@ -341,11 +349,11 @@ _  /    _  __ \_  __ `__ \_  __ `__ \_  /_  __/  /    _  __ \_  __ `__ \__  __ \
 
             File.AppendAllText("commits.txt", $"\n# Statistics\n\n* **Commits done**: {totalCommits}\n\n(Generated with [*CommitCompiler*](https://github.com/verlox/CommitCompiler) made by **verlox**)");
 
-            core.WriteLine(Color.LimeGreen, "Finished outputting to ", Color.Lime, "commits.txt", Color.LimeGreen, ", open the file?");
+            CLI.WriteLine(Color.LimeGreen, "Finished outputting to ", Color.Lime, "commits.txt", Color.LimeGreen, ", open the file?");
             if (new SelectionMenu("Yes", "No").Activate() == "Yes")
             {
                 Process.Start("commits.txt");
-                core.WriteLine("Closing in 5 seconds...");
+                CLI.WriteLine("Closing in 5 seconds...");
                 new Thread(() =>
                 {
                     Thread.Sleep(5000);

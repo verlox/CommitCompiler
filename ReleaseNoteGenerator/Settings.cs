@@ -3,6 +3,7 @@ using Win = Microsoft.Win32;
 using Veylib.Utilities;
 using System.Drawing;
 using System.Diagnostics;
+using Veylib.ICLI;
 
 namespace ReleaseNoteGenerator
 {
@@ -19,12 +20,12 @@ namespace ReleaseNoteGenerator
                 key.SetValue("filterCommits", filterCommits);
                 key.SetValue("sortCommits", sortCommits);
                 key.SetValue("removeDupes", removeDupes);
-                Program.core.WriteLine(Color.Green, "Exported settings to registry");
+                CLI.WriteLine(Color.Green, "Exported settings to registry");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-                Program.core.WriteLine("Failed to export settings to registry: ", Color.Red, ex.Message);
+                CLI.WriteLine("Failed to export settings to registry: ", Color.Red, ex.Message);
             }
         }
 
@@ -39,12 +40,12 @@ namespace ReleaseNoteGenerator
                 filterCommits = bool.Parse(key.GetValue("filterCommits")?.ToString() ?? "true");
                 sortCommits = bool.Parse(key.GetValue("sortCommits")?.ToString() ?? "true");
                 removeDupes = bool.Parse(key.GetValue("removeDupes")?.ToString() ?? "true");
-                Program.core.WriteLine(Color.Green, "Imported settings from registry");
+                CLI.WriteLine(Color.Green, "Imported settings from registry");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-                Program.core.WriteLine("Failed to import settings from registry: ", Color.Red, ex.Message);
+                CLI.WriteLine("Failed to import settings from registry: ", Color.Red, ex.Message);
             }
         }
 
